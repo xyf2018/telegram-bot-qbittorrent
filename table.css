@@ -1,0 +1,64 @@
+* {
+    box-sizing: border-box;
+    margin: 0px;
+    padding: 0px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+}
+
+
+/*---------- BODY ----------*/
+body {
+    max-width: 1000px;
+    margin: 50px auto 50px auto;
+    padding: 50px;
+    border-radius: 15px;
+}
+
+
+/*---------- TABLES ----------*/
+/*----- basics -----*/
+table {
+    border-collapse: collapse;
+    border-bottom: 1px solid rgb(0, 0, 0, 0.2);
+
+    max-width: 2000px;
+    width: 100%;
+
+    margin: 10px auto 20px auto;
+}
+
+/*----- table headings -----*/
+th {
+    background-color: #aecbeb;
+    border: 1px solid black;
+    padding: 10px;
+    text-align: left;
+    font-size: 18px;
+}
+
+
+/*----- table data (a cell) -----*/
+td {
+    padding: 8px;
+    border-bottom: 1px solid black;
+    border: 1px solid rgb(0, 0, 0, 0.2);
+}
+
+
+/*----- table row hover animation -----*/
+tr {
+    transition: background-color 0.5s;
+}
+
+tr:hover {
+    background-color: #e8e8e8;
+}
+
+td {
+    transition: background-color 0.4s;
+}
+
+td:hover {
+    background-color: lightgrey;
+}
