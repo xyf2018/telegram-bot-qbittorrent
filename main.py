@@ -7,7 +7,7 @@ from html2image import Html2Image
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
 
-hti = Html2Image()
+hti = Html2Image(browser="edge")
 
 qb = qbittorrentapi.Client(
     host='localhost',
@@ -224,7 +224,8 @@ async def options_query_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 if __name__ == '__main__':
-    application = ApplicationBuilder().token('TOKEN').build()
+    proxy = 'http://127.0.0.1:7890'
+    application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).build()
 
     magnet_handler = CommandHandler('magnet', magnet)
     paused_handler = CommandHandler('downloading', downloading)
