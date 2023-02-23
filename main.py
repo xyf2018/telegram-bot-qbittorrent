@@ -5,7 +5,7 @@ from datetime import timedelta
 import qbittorrentapi
 from html2image import Html2Image
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler, filters
 
 hti = Html2Image(browser="edge")
 
@@ -227,10 +227,10 @@ if __name__ == '__main__':
     proxy = 'http://127.0.0.1:7890'
     application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).build()
 
-    magnet_handler = CommandHandler('magnet', magnet)
-    paused_handler = CommandHandler('downloading', downloading)
-    resumed_handler = CommandHandler('resumed', resumed)
-    completed_handler = CommandHandler('completed', completed)
+    magnet_handler = CommandHandler('magnet', magnet, filters.User(USER_ID))
+    paused_handler = CommandHandler('downloading', downloading, filters.User(USER_ID))
+    resumed_handler = CommandHandler('resumed', resumed, filters.User(USER_ID))
+    completed_handler = CommandHandler('completed', completed, filters.User(USER_ID))
     application.add_handler(magnet_handler)
     application.add_handler(resumed_handler)
     application.add_handler(paused_handler)
