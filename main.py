@@ -5,7 +5,7 @@ from datetime import timedelta
 import qbittorrentapi
 from html2image import Html2Image
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler, filters
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
 hti = Html2Image(browser="edge")
 
@@ -41,6 +41,18 @@ async def magnet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
     except IndexError:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Provide magent link.")
+
+
+async def torrent(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        file_name = update.message.document.file_name
+        new_file = await update.message.effective_attachment.get_file()
+        await new_file.download_to_drive(custom_path='temp/%s' % file_name)
+
+        response = qb.torrents_add(torrent_files='temp/%s' % file_name)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    except:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Add torrent file failed.")
 
 
 async def resumed(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -227,10 +239,12 @@ if __name__ == '__main__':
     proxy = 'http://127.0.0.1:7890'
     application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).build()
 
+    torrent_handler = MessageHandler(filters.Document.FileExtension("torrent") & filters.User(USER_ID), torrent)
     magnet_handler = CommandHandler('magnet', magnet, filters.User(USER_ID))
     paused_handler = CommandHandler('downloading', downloading, filters.User(USER_ID))
     resumed_handler = CommandHandler('resumed', resumed, filters.User(USER_ID))
     completed_handler = CommandHandler('completed', completed, filters.User(USER_ID))
+    application.add_handler(torrent_handler)
     application.add_handler(magnet_handler)
     application.add_handler(resumed_handler)
     application.add_handler(paused_handler)
