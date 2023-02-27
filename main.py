@@ -237,7 +237,7 @@ async def options_query_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
 if __name__ == '__main__':
     proxy = 'http://127.0.0.1:7890'
-    application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).build()
+    application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).get_updates_connection_pool_size(100).build()
 
     torrent_handler = MessageHandler(filters.Document.FileExtension("torrent") & filters.User(USER_ID), torrent)
     magnet_handler = CommandHandler('magnet', magnet, filters.User(USER_ID))
