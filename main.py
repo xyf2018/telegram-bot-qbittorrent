@@ -7,7 +7,7 @@ from html2image import Html2Image
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-hti = Html2Image(browser="edge")
+hti = Html2Image(browser_executable='GoogleChromePortable64/App/Chrome-bin/chrome.exe')
 
 qb = qbittorrentapi.Client(
     host='localhost',
@@ -88,7 +88,7 @@ async def downloading(update: Update, context: ContextTypes.DEFAULT_TYPE):
             {result_html}
         </tbody>
         </table>
-        """, save_as='temp.png', size=(900, (len(downloading_tors) * 40) + 200), css_str=table_css)
+        """, save_as='temp.png', size=(1000, (len(downloading_tors) * 40) + 200), css_str=table_css)
     await update.message.reply_photo(img[0])
 
 
