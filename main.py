@@ -3,11 +3,9 @@ import math
 from datetime import timedelta
 
 import qbittorrentapi
-from html2image import Html2Image
+import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
-
-hti = Html2Image(browser_executable='GoogleChromePortable64/App/Chrome-bin/chrome.exe')
 
 qb = qbittorrentapi.Client(
     host='localhost',
@@ -18,10 +16,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-
-with open('table.css') as table_css_file:
-    table_css = table_css_file.read()
-
 
 def convert_size(size_bytes):
     if size_bytes == 0:
@@ -73,23 +67,33 @@ async def downloading(update: Update, context: ContextTypes.DEFAULT_TYPE):
             <td>{timedelta(seconds=eta)}</td>
         </tr>
         """
-    img = hti.screenshot(html_str=f"""
-        <table>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Progress</th>
-            <th>Downloaded</th>
-            <th>Remaining</th>
-            <th>ETA</th>
-        </tr>
-        </thead>
-        <tbody>
-            {result_html}
-        </tbody>
-        </table>
-        """, save_as='temp.png', size=(1000, (len(downloading_tors) * 40) + 200), css_str=table_css)
-    await update.message.reply_photo(img[0])
+    html_str=f"""
+    <table border="1">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Progress</th>
+        <th>Downloaded</th>
+        <th>Remaining</th>
+        <th>ETA</th>
+    </tr>
+    </thead>
+    <tbody>
+        {result_html}
+    </tbody>
+    </table>
+    """
+    requests.post(
+        f"https://api.telegram.org/bot{TOKEN}/sendRichMessage",
+        json={
+            "chat_id": update.effective_chat.id,
+            "rich_message": {
+                "html" : html_str,
+                "skip_entity_detection" : True,
+            },
+        },
+        timeout=30,
+    )
 
 
 async def completed(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -104,8 +108,8 @@ async def completed(update: Update, context: ContextTypes.DEFAULT_TYPE):
         <td>{total_size}</td>
         </tr>
         """
-    img = hti.screenshot(html_str=f"""
-    <table>
+    html_str=f"""
+    <table border="1">
     <thead>
     <tr>
         <th>Name</th>
@@ -116,20 +120,31 @@ async def completed(update: Update, context: ContextTypes.DEFAULT_TYPE):
         {result_html}
     </tbody>
     </table>
-    """, save_as='temp.png', size=(900, (len(completed_tors) * 40) + 200), css_str=table_css)
-    await update.message.reply_photo(img[0])
+    """
+    requests.post(
+        f"https://api.telegram.org/bot{TOKEN}/sendRichMessage",
+        json={
+            "chat_id": update.effective_chat.id,
+            "rich_message": {
+                "html" : html_str,
+                "skip_entity_detection" : True,
+            },
+        },
+        timeout=30,
+    )
 
 
 if __name__ == '__main__':
-    proxy = 'http://127.0.0.1:7890'
-    application = ApplicationBuilder().token('TOKEN').proxy_url(proxy).get_updates_proxy_url(proxy).get_updates_connection_pool_size(100).build()
+    proxy_url = 'http://127.0.0.1:7890'
 
-    torrent_handler = MessageHandler(filters.Document.FileExtension("torrent") & filters.User(USER_ID), torrent)
+    application = ApplicationBuilder().token('TOKEN').proxy(proxy_url).get_updates_proxy(proxy_url).get_updates_connection_pool_size(100).build()
+
     magnet_handler = CommandHandler('magnet', magnet, filters.User(USER_ID))
+    torrent_handler = MessageHandler(filters.Document.FileExtension("torrent") & filters.User(USER_ID), torrent)
     downloading_handler = CommandHandler('downloading', downloading, filters.User(USER_ID))
     completed_handler = CommandHandler('completed', completed, filters.User(USER_ID))
-    application.add_handler(torrent_handler)
     application.add_handler(magnet_handler)
+    application.add_handler(torrent_handler)
     application.add_handler(downloading_handler)
     application.add_handler(completed_handler)
 
