@@ -4,8 +4,14 @@ from datetime import timedelta
 
 import qbittorrentapi
 import requests
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+
+proxy = 'http://127.0.0.1:7890'
+PROXIES = {
+    'http' : proxy,
+    'https' : proxy,
+}
 
 qb = qbittorrentapi.Client(
     host='localhost',
@@ -50,7 +56,7 @@ async def torrent(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def downloading(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    downloading_tors = qb.torrents_info(status_filter='downloading')
+    downloading_tors = qb.torrents_info(status_filter='downloading', sort='name')
     result_html = ''
     for tor in downloading_tors:
         name = tor['name']
@@ -92,12 +98,13 @@ async def downloading(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "skip_entity_detection" : True,
             },
         },
+        proxies=PROXIES,
         timeout=30,
     )
 
 
 async def completed(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    completed_tors = qb.torrents_info(status_filter='completed')
+    completed_tors = qb.torrents_info(status_filter='completed', sort='name')
     result_html = ''
     for tor in completed_tors:
         name = tor['name']
@@ -130,14 +137,13 @@ async def completed(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "skip_entity_detection" : True,
             },
         },
+        proxies=PROXIES,
         timeout=30,
     )
 
 
 if __name__ == '__main__':
-    proxy_url = 'http://127.0.0.1:7890'
-
-    application = ApplicationBuilder().token('TOKEN').proxy(proxy_url).get_updates_proxy(proxy_url).get_updates_connection_pool_size(100).build()
+    application = ApplicationBuilder().token(TOKEN).proxy(proxy).get_updates_proxy(proxy).get_updates_connection_pool_size(100).build()
 
     magnet_handler = CommandHandler('magnet', magnet, filters.User(USER_ID))
     torrent_handler = MessageHandler(filters.Document.FileExtension("torrent") & filters.User(USER_ID), torrent)
